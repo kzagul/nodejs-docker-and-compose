@@ -7,7 +7,7 @@ export default () => ({
     port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
     user: process.env.POSTGRES_USER || 'student',
     password: process.env.POSTGRES_PASSWORD || 'student',
-    name: process.env.POSTGRES_DB_NAME || 'kupipodariday',
+    name: process.env.POSTGRES_DB || 'kupipodariday',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'secret-key',
