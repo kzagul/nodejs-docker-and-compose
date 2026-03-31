@@ -1,10 +1,4 @@
-import {
-  IsDecimal,
-  IsNotEmpty,
-  IsString,
-  IsUrl,
-  Length,
-} from 'class-validator';
+import { IsNumber, IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 
 export class CreateWishDto {
   @Length(1, 250)
@@ -18,7 +12,7 @@ export class CreateWishDto {
   @IsUrl()
   image: string;
 
-  @IsDecimal()
+  @IsNumber()
   price: number;
 
   @IsString()

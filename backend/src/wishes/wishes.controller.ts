@@ -50,6 +50,11 @@ export class WishesController {
     return this.wishesService.copyWish(+id, user.id);
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    return this.wishesService.findOne(+id);
+  }
+
   @Patch(':id')
   async updateWish(
     @Param('id') id: number,
