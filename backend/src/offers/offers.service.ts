@@ -43,10 +43,10 @@ export class OffersService {
     const { amount, wishId } = createOfferDto;
     const wish = await this.wishRepository.findOne({
       where: { id: wishId },
-      relations: ['user', 'offers'],
+      relations: ['owner', 'offers'],
     });
 
-    if (userId === wish.user.id) {
+    if (userId === wish.owner.id) {
       throw new ForbiddenException(`Вы не можете скидываться на свой подарок`);
     }
 

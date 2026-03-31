@@ -40,7 +40,7 @@ export class Wish {
   raised: number;
 
   @ManyToOne(() => User, (user) => user.wishes)
-  user: User;
+  owner: User;
 
   @Column({ length: 1024 })
   @Length(1, 1024)

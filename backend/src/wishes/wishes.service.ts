@@ -29,7 +29,7 @@ export class WishesService {
   async findOne(id: number): Promise<Wish> {
     const wish = await this.wishRepository.findOne({
       where: { id },
-      relations: ['offers'],
+      relations: ['offers', 'owner'],
     });
     if (!wish) {
       throw new NotFoundException(`Подарок по указанному id ${id} не найден`);
@@ -44,7 +44,7 @@ export class WishesService {
       order: {
         createdAt: 'DESC',
       },
-      relations: ['user'],
+      relations: ['owner'],
     });
     return lastWishes;
   }
@@ -55,25 +55,21 @@ export class WishesService {
       order: {
         copied: 'DESC',
       },
-      relations: ['user'],
+      relations: ['owner'],
     });
     return topWishes;
   }
 
   async findUserWishes(ownerId: number) {
-    const ownerWishes = await this.wishRepository.find({
-      where: { user: { id: ownerId } },
+    return this.wishRepository.find({
+      where: { owner: { id: ownerId } },
     });
-    if (ownerWishes.length === 0) {
-      throw new NotFoundException(`У данного пользователя отсутствуют подарки`);
-    }
-    return ownerWishes;
   }
 
   async create(userId: number, createWishDto: CreateWishDto): Promise<Wish> {
     const newWish = await this.wishRepository.create({
       ...createWishDto,
-      user: { id: userId },
+      owner: { id: userId },
     });
     return this.wishRepository.save(newWish);
   }
@@ -81,12 +77,12 @@ export class WishesService {
   async update(id: number, updateWishDto: UpdateWishDto, userId: number) {
     const wish = await this.wishRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['owner'],
     });
     if (!wish) {
       throw new NotFoundException(`Подарок по указанному id ${id} не найден`);
     }
-    if (wish?.user?.id !== userId) {
+    if (wish?.owner?.id !== userId) {
       throw new ForbiddenException(`Вы не можете редактировать чужой подарок`);
     }
     if (wish.raised > 0) {
@@ -100,12 +96,12 @@ export class WishesService {
   async delete(id: number, userId: number) {
     const wish = await this.wishRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['owner'],
     });
     if (!wish) {
       throw new NotFoundException(`Подарок по указанному id ${id} не найден`);
     }
-    if (wish?.user?.id !== userId) {
+    if (wish?.owner?.id !== userId) {
       throw new ForbiddenException(`Вы не можете удалить чужой подарок`);
     }
     await this.wishRepository.delete(wish.id);
@@ -115,11 +111,11 @@ export class WishesService {
   async copyWish(id: number, userId: number) {
     const wishToCopy = await this.wishRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['owner'],
     });
     const existWishToCopy = await this.wishRepository.findOneBy({
       name: wishToCopy.name,
-      user: { id: userId },
+      owner: { id: userId },
     });
     if (existWishToCopy) {
       throw new ConflictException(`Вы уже копировали к себе этот подарок`);
@@ -127,7 +123,7 @@ export class WishesService {
     if (!wishToCopy) {
       throw new NotFoundException(`Подарок по указанному id ${id} не найден`);
     }
-    if (wishToCopy?.user?.id === userId) {
+    if (wishToCopy?.owner?.id === userId) {
       throw new UnauthorizedException(
         'Вы не можете копировать свой собственный подарок.',
       );
@@ -136,7 +132,7 @@ export class WishesService {
     await this.wishRepository.save({ ...wishToCopy });
     const copiedWish = await this.wishRepository.create({
       ...wishToCopy,
-      user: { id: userId },
+      owner: { id: userId },
     });
     return this.wishRepository.save(copiedWish);
   }
